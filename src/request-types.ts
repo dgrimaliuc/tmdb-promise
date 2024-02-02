@@ -1079,7 +1079,7 @@ export interface EpisodeExternalIdsResponse extends Response {
 }
 
 interface EpisodeImage extends BaseImage {
-  iso_639_1?: null | string;
+  iso_639_1?: null | string
 }
 
 export interface EpisodeImagesResponse extends Response {
@@ -1292,7 +1292,6 @@ interface PersonTaggedImage extends BaseImage {
   image_type?: string
   media?: MovieResult | TvResult
 }
-
 
 export interface PersonTaggedImagesResponse extends PaginatedResponse {
   id?: number

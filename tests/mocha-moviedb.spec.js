@@ -3,7 +3,7 @@
 /* global describe it */
 require('dotenv').config()
 const assert = require('chai').assert
-const apiKey = process.env.MOVIEDB_API_KEY || process.env.npm_config_key
+const apiKey = process.env.MOVIEDB_API_KEY
 const { MovieDb } = require('../dist')
 
 // Include --sesion='{your session id}' to test the watchlist

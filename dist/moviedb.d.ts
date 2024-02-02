@@ -8,6 +8,8 @@ export declare class MovieDb {
     baseUrl: string;
     sessionId: string;
     constructor(apiKey: string, baseUrl?: string, requestsPerSecondLimit?: number);
+    movieMediaType: any;
+    tvMediaType: any;
     /**
      * Gets an api token using an api key
      *

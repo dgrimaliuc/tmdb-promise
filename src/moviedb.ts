@@ -20,6 +20,9 @@ export class MovieDb {
     })
   }
 
+  movieMediaType: any = { media_type: 'movie' }
+  tvMediaType: any = { media_type: 'tv' }
+
   /**
    * Gets an api token using an api key
    *
@@ -105,11 +108,12 @@ export class MovieDb {
   /**
    * Performs the request to the server
    */
-  private makeRequest(
+  private makeRequest<T>(
     method: HttpMethod,
     endpoint: string,
     params: string | number | RequestParams = {},
     axiosConfig: AxiosRequestConfig = {},
+    extraProps: {} = {},
   ): Promise<any> {
     const normalizedParams: RequestParams = this.normalizeParams(endpoint, params)
 
@@ -131,7 +135,13 @@ export class MovieDb {
       ...axiosConfig,
     }
 
-    return this.queue.add(async () => (await axios.request(request)).data)
+    return this.queue.add(async () => {
+      const res = (await axios.request(request)).data
+      if (res.results && res.results.length > 0) {
+        res.results = res.results?.map((r: any) => ({ ...r, ...extraProps })) //media_type: 'movie' | 'tv' | 'person'
+      }
+      return { ...res }
+    })
   }
 
   private parseSearchParams(params: string | types.SearchRequest): types.SearchRequest {
@@ -189,7 +199,13 @@ export class MovieDb {
   }
 
   searchMovie(params: types.SearchMovieRequest, axiosConfig?: AxiosRequestConfig): Promise<types.MovieResultsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'search/movie', this.parseSearchParams(params), axiosConfig)
+    return this.makeRequest(
+      HttpMethod.Get,
+      'search/movie',
+      this.parseSearchParams(params),
+      axiosConfig,
+      this.movieMediaType,
+    )
   }
 
   searchMulti(params: types.SearchMultiRequest, axiosConfig?: AxiosRequestConfig): Promise<types.SearchMultiResponse> {
@@ -237,7 +253,7 @@ export class MovieDb {
     params?: types.DiscoverMovieRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.DiscoverMovieResponse> {
-    return this.makeRequest(HttpMethod.Get, 'discover/movie', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'discover/movie', params, axiosConfig, this.movieMediaType)
   }
 
   discoverTv(params?: types.DiscoverTvRequest, axiosConfig?: AxiosRequestConfig): Promise<types.DiscoverTvResponse> {
@@ -343,14 +359,14 @@ export class MovieDb {
     params: string | number | types.MovieRecommendationsRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.MovieRecommendationsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/:id/recommendations', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/:id/recommendations', params, axiosConfig, this.movieMediaType)
   }
 
   movieSimilar(
     params: string | number | types.IdRequestParams,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.SimilarMovieResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/:id/similar', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/:id/similar', params, axiosConfig, this.movieMediaType)
   }
 
   movieReviews(
@@ -398,21 +414,21 @@ export class MovieDb {
     params?: types.PopularMoviesRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.PopularMoviesResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/popular', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/popular', params, axiosConfig, this.movieMediaType)
   }
 
   movieTopRated(
     params?: types.TopRatedMoviesRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.TopRatedMoviesResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/top_rated', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/top_rated', params, axiosConfig, this.movieMediaType)
   }
 
   upcomingMovies(
     params: types.UpcomingMoviesRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.UpcomingMoviesResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/upcoming', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/upcoming', params, axiosConfig, this.movieMediaType)
   }
 
   tvInfo(
@@ -494,7 +510,7 @@ export class MovieDb {
     params: string | number | types.IdPagedRequestParams,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.TvResultsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/:id/recommendations', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/:id/recommendations', params, axiosConfig, this.tvMediaType)
   }
 
   tvReviews(
@@ -515,7 +531,7 @@ export class MovieDb {
     params: string | number | types.IdPagedRequestParams,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.TvSimilarShowsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/:id/similar', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/:id/similar', params, axiosConfig, this.tvMediaType)
   }
 
   tvTranslations(
@@ -558,23 +574,23 @@ export class MovieDb {
   }
 
   tvLatest(params?: RequestParams, axiosConfig?: AxiosRequestConfig): Promise<types.ShowResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/latest', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/latest', params, axiosConfig, this.tvMediaType)
   }
 
   tvAiringToday(params?: types.PagedRequestParams, axiosConfig?: AxiosRequestConfig): Promise<types.TvResultsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/airing_today', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/airing_today', params, axiosConfig, this.tvMediaType)
   }
 
   tvOnTheAir(params?: types.PagedRequestParams, axiosConfig?: AxiosRequestConfig): Promise<types.TvResultsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/on_the_air', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/on_the_air', params, axiosConfig, this.tvMediaType)
   }
 
   tvPopular(params?: types.PagedRequestParams, axiosConfig?: AxiosRequestConfig): Promise<types.TvResultsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/popular', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/popular', params, axiosConfig, this.tvMediaType)
   }
 
   tvTopRated(params?: types.PagedRequestParams, axiosConfig?: AxiosRequestConfig): Promise<types.TvResultsResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/top_rated', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/top_rated', params, axiosConfig, this.tvMediaType)
   }
 
   seasonInfo(params: types.TvSeasonRequest, axiosConfig?: AxiosRequestConfig): Promise<types.TvSeasonResponse> {
@@ -599,7 +615,10 @@ export class MovieDb {
     return this.makeRequest(HttpMethod.Get, 'tv/:id/season/:season_number/credits', params, axiosConfig)
   }
 
-  seasonAggregateCredits(params: types.TvAggregateCreditsRequest, axiosConfig?: AxiosRequestConfig): Promise<types.CreditsResponse> {
+  seasonAggregateCredits(
+    params: types.TvAggregateCreditsRequest,
+    axiosConfig?: AxiosRequestConfig,
+  ): Promise<types.CreditsResponse> {
     return this.makeRequest(HttpMethod.Get, 'tv/:id/season/:season_number/aggregate_credits', params, axiosConfig)
   }
 

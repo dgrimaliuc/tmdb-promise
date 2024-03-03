@@ -105,16 +105,26 @@ export class MovieDb {
     return compiledParams
   }
 
+  sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
   /**
    * Performs the request to the server
    */
   private makeRequest<T>(
     method: HttpMethod,
     endpoint: string,
-    params: string | number | RequestParams = {},
+    params: string | number | RequestParams = { timeout: 0 },
     axiosConfig: AxiosRequestConfig = {},
     extraProps: {} = {},
   ): Promise<any> {
+    const timeout = axiosConfig.timeout || 0
+
+    if (timeout) {
+      delete axiosConfig.timeout
+    }
+
     const normalizedParams: RequestParams = this.normalizeParams(endpoint, params)
 
     // Get the full query/data object
@@ -136,11 +146,12 @@ export class MovieDb {
     }
 
     return this.queue.add(async () => {
+      await this.sleep(timeout)
       const res = (await axios.request(request)).data
       if (res.results && res.results.length > 0) {
         res.results = res.results?.map((r: any) => ({ ...r, ...extraProps })) //media_type: 'movie' | 'tv' | 'person'
       }
-      return { ...res }
+      return res
     })
   }
 

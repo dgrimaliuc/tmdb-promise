@@ -10,7 +10,7 @@ const { MovieDb } = require('../dist')
 // or `MOVIEDB_SESSION_ID` in a .env
 const sessionId = process.env.MOVIEDB_SESSION_ID || process.env.npm_config_session
 
-const haveValidGenericResponse = (res) => {
+export const haveValidGenericResponse = (res) => {
   res.should.be.an('object')
   res.should.have.property('results')
   res.results.should.be.an('array')

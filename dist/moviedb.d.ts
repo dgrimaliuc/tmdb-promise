@@ -32,6 +32,7 @@ export declare class MovieDb {
      * Compiles the data/query data to send with the request
      */
     private getParams;
+    sleep(ms: number): Promise<unknown>;
     /**
      * Performs the request to the server
      */

@@ -88,10 +88,17 @@ class MovieDb {
         }
         return compiledParams;
     }
+    sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
     /**
      * Performs the request to the server
      */
-    makeRequest(method, endpoint, params = {}, axiosConfig = {}, extraProps = {}) {
+    makeRequest(method, endpoint, params = { timeout: 0 }, axiosConfig = {}, extraProps = {}) {
+        const timeout = axiosConfig.timeout || 0;
+        if (timeout) {
+            delete axiosConfig.timeout;
+        }
         const normalizedParams = this.normalizeParams(endpoint, params);
         // Get the full query/data object
         const fullQuery = this.getParams(endpoint, normalizedParams);
@@ -108,11 +115,12 @@ class MovieDb {
             ...axiosConfig,
         };
         return this.queue.add(async () => {
+            await this.sleep(timeout);
             const res = (await axios_1.default.request(request)).data;
             if (res.results && res.results.length > 0) {
                 res.results = res.results?.map((r) => ({ ...r, ...extraProps })); //media_type: 'movie' | 'tv' | 'person'
             }
-            return { ...res };
+            return res;
         });
     }
     parseSearchParams(params) {

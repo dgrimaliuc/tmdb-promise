@@ -33,6 +33,7 @@ export interface AuthenticationToken extends Response {
 export interface RequestParams {
   id?: string | number
   language?: string
+  timeout?: number
 }
 
 export interface SessionRequestParams extends RequestParams {

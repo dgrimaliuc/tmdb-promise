@@ -115,15 +115,11 @@ export class MovieDb {
   private makeRequest<T>(
     method: HttpMethod,
     endpoint: string,
-    params: string | number | RequestParams = { timeout: 0 },
+    params: string | number | RequestParams = {},
     axiosConfig: AxiosRequestConfig = {},
     extraProps: {} = {},
   ): Promise<any> {
-    const timeout = axiosConfig.timeout || 0
-
-    if (timeout) {
-      delete axiosConfig.timeout
-    }
+    const timeout = typeof params === 'object' ? params.timeout : 0
 
     const normalizedParams: RequestParams = this.normalizeParams(endpoint, params)
 

@@ -94,11 +94,8 @@ class MovieDb {
     /**
      * Performs the request to the server
      */
-    makeRequest(method, endpoint, params = { timeout: 0 }, axiosConfig = {}, extraProps = {}) {
-        const timeout = axiosConfig.timeout || 0;
-        if (timeout) {
-            delete axiosConfig.timeout;
-        }
+    makeRequest(method, endpoint, params = {}, axiosConfig = {}, extraProps = {}) {
+        const timeout = typeof params === 'object' ? params.timeout : 0;
         const normalizedParams = this.normalizeParams(endpoint, params);
         // Get the full query/data object
         const fullQuery = this.getParams(endpoint, normalizedParams);

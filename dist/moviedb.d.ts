@@ -3,11 +3,15 @@ import { AuthenticationToken, RequestParams } from './types';
 import * as types from './request-types';
 export declare class MovieDb {
     private apiKey;
+    private authToken;
     private token;
     private queue;
     baseUrl: string;
     sessionId: string;
-    constructor(apiKey: string, baseUrl?: string, requestsPerSecondLimit?: number);
+    constructor(auth: {
+        apiKey?: string;
+        authToken?: string;
+    }, baseUrl?: string, requestsPerSecondLimit?: number);
     movieMediaType: any;
     tvMediaType: any;
     /**

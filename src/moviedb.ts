@@ -6,13 +6,19 @@ import * as types from './request-types'
 
 export class MovieDb {
   private apiKey: string
+  private authToken: string
   private token: AuthenticationToken
   private queue: PromiseThrottle
   public baseUrl: string
   public sessionId: string
 
-  constructor(apiKey: string, baseUrl: string = 'https://api.themoviedb.org/3/', requestsPerSecondLimit: number = 50) {
-    this.apiKey = apiKey
+  constructor(
+    auth: { apiKey?: string; authToken?: string },
+    baseUrl: string = 'https://api.themoviedb.org/3/',
+    requestsPerSecondLimit: number = 50,
+  ) {
+    this.apiKey = auth.apiKey
+    this.authToken = auth.authToken
     this.baseUrl = baseUrl
     this.queue = new PromiseThrottle({
       requestsPerSecond: requestsPerSecondLimit,
@@ -89,7 +95,7 @@ export class MovieDb {
     // Merge default parameters with the ones passed in
     const compiledParams: RequestParams = merge(
       {
-        api_key: this.apiKey,
+        ...(this.apiKey && { api_key: this.apiKey }),
         ...(this.sessionId && { session_id: this.sessionId }),
       },
       params,
@@ -138,6 +144,7 @@ export class MovieDb {
       url: this.baseUrl + this.getEndpoint(endpoint, fullQuery),
       ...(method === HttpMethod.Get && { params: query }),
       ...(method !== HttpMethod.Get && { data: query }),
+      ...(this.authToken && { headers: { Authorization: `Bearer ${this.authToken}` } }),
       ...axiosConfig,
     }
 

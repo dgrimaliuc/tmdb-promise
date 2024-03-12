@@ -10,12 +10,14 @@ const promise_throttle_1 = __importDefault(require("promise-throttle"));
 const types_1 = require("./types");
 class MovieDb {
     apiKey;
+    authToken;
     token;
     queue;
     baseUrl;
     sessionId;
-    constructor(apiKey, baseUrl = 'https://api.themoviedb.org/3/', requestsPerSecondLimit = 50) {
-        this.apiKey = apiKey;
+    constructor(auth, baseUrl = 'https://api.themoviedb.org/3/', requestsPerSecondLimit = 50) {
+        this.apiKey = auth.apiKey;
+        this.authToken = auth.authToken;
         this.baseUrl = baseUrl;
         this.queue = new promise_throttle_1.default({
             requestsPerSecond: requestsPerSecondLimit,
@@ -77,7 +79,7 @@ class MovieDb {
     getParams(endpoint, params = {}) {
         // Merge default parameters with the ones passed in
         const compiledParams = (0, lodash_1.merge)({
-            api_key: this.apiKey,
+            ...(this.apiKey && { api_key: this.apiKey }),
             ...(this.sessionId && { session_id: this.sessionId }),
         }, params);
         // Some endpoints have an optional account_id parameter (when there's a session).
@@ -109,6 +111,7 @@ class MovieDb {
             url: this.baseUrl + this.getEndpoint(endpoint, fullQuery),
             ...(method === types_1.HttpMethod.Get && { params: query }),
             ...(method !== types_1.HttpMethod.Get && { data: query }),
+            ...(this.authToken && { headers: { Authorization: `Bearer ${this.authToken}` } }),
             ...axiosConfig,
         };
         return this.queue.add(async () => {

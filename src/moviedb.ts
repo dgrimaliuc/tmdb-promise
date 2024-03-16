@@ -271,7 +271,7 @@ export class MovieDb {
   }
 
   discoverTv(params?: types.DiscoverTvRequest, axiosConfig?: AxiosRequestConfig): Promise<types.DiscoverTvResponse> {
-    return this.makeRequest(HttpMethod.Get, 'discover/tv', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'discover/tv', params, axiosConfig, this.tvMediaType)
   }
 
   trending(params: types.TrendingRequest, axiosConfig?: AxiosRequestConfig): Promise<types.TrendingResponse> {
@@ -421,7 +421,7 @@ export class MovieDb {
     params?: types.MovieNowPlayingRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.MovieNowPlayingResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/now_playing', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/now_playing', params, axiosConfig, this.movieMediaType)
   }
 
   moviePopular(

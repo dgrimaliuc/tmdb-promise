@@ -254,7 +254,7 @@ class MovieDb {
         return this.makeRequest(types_1.HttpMethod.Get, 'movie/latest', (0, lodash_1.isString)(params) ? { language: params } : params, axiosConfig);
     }
     movieNowPlaying(params, axiosConfig) {
-        return this.makeRequest(types_1.HttpMethod.Get, 'movie/now_playing', params, axiosConfig);
+        return this.makeRequest(types_1.HttpMethod.Get, 'movie/now_playing', params, axiosConfig, this.movieMediaType);
     }
     moviePopular(params, axiosConfig) {
         return this.makeRequest(types_1.HttpMethod.Get, 'movie/popular', params, axiosConfig, this.movieMediaType);

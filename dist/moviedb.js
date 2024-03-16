@@ -188,7 +188,7 @@ class MovieDb {
         return this.makeRequest(types_1.HttpMethod.Get, 'discover/movie', params, axiosConfig, this.movieMediaType);
     }
     discoverTv(params, axiosConfig) {
-        return this.makeRequest(types_1.HttpMethod.Get, 'discover/tv', params, axiosConfig);
+        return this.makeRequest(types_1.HttpMethod.Get, 'discover/tv', params, axiosConfig, this.tvMediaType);
     }
     trending(params, axiosConfig) {
         return this.makeRequest(types_1.HttpMethod.Get, 'trending/:media_type/:time_window', params, axiosConfig);

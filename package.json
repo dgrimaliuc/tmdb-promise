@@ -1,7 +1,7 @@
 {
   "name": "tmdb-promise",
   "description": "A library for interacting with themoviedb.org API using Promises",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "scripts": {
     "test": "npm run build && mocha ./tests/mocha*.js --reporter spec",
     "build": "rm -rf ./dist && tsc",

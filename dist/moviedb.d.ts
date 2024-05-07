@@ -12,6 +12,8 @@ export declare class MovieDb {
         apiKey?: string;
         authToken?: string;
     }, baseUrl?: string, requestsPerSecondLimit?: number);
+    cartonsSubType: any;
+    animationSubType: any;
     movieMediaType: any;
     tvMediaType: any;
     /**

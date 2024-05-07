@@ -24,6 +24,8 @@ class MovieDb {
             promiseImplementation: Promise,
         });
     }
+    cartonsSubType = { media_sub_type: 'cartoons', hasSubType: true };
+    animationSubType = { media_sub_type: 'animation', hasSubType: true };
     movieMediaType = { media_type: 'movie' };
     tvMediaType = { media_type: 'tv' };
     /**
@@ -96,7 +98,7 @@ class MovieDb {
     /**
      * Performs the request to the server
      */
-    makeRequest(method, endpoint, params = {}, axiosConfig = {}, extraProps = {}) {
+    makeRequest(method, endpoint, params = {}, axiosConfig = {}, extraProps = { hasSubType: false }) {
         const timeout = typeof params === 'object' ? params?.timeout : 0;
         const normalizedParams = this.normalizeParams(endpoint, params);
         // Get the full query/data object
@@ -116,9 +118,25 @@ class MovieDb {
         };
         return this.queue.add(async () => {
             await this.sleep(timeout);
-            const res = (await axios_1.default.request(request)).data;
+            let res = (await axios_1.default.request(request)).data;
             if (res.results && res.results.length > 0) {
                 res.results = res.results?.map((r) => ({ ...r, ...extraProps })); //media_type: 'movie' | 'tv' | 'person'
+            }
+            else {
+                if (extraProps.hasSubType) {
+                    let subType = null;
+                    const isAnimation = Object.values(res.genres || []).some((it) => it.name === 'Animation');
+                    if (res.origin_country.includes('JP') && isAnimation) {
+                        subType = this.animationSubType;
+                    }
+                    else if (isAnimation) {
+                        subType = this.cartonsSubType;
+                    }
+                    else {
+                        subType = { hasSubType: false };
+                    }
+                    res = { ...res, ...extraProps, ...subType };
+                }
             }
             return res;
         });
@@ -194,7 +212,10 @@ class MovieDb {
         return this.makeRequest(types_1.HttpMethod.Get, 'trending/:media_type/:time_window', params, axiosConfig);
     }
     movieInfo(params, axiosConfig) {
-        return this.makeRequest(types_1.HttpMethod.Get, 'movie/:id', params, axiosConfig);
+        return this.makeRequest(types_1.HttpMethod.Get, 'movie/:id', params, axiosConfig, {
+            ...this.movieMediaType,
+            hasSubType: true,
+        });
     }
     movieAccountStates(params, axiosConfig) {
         return this.makeRequest(types_1.HttpMethod.Get, 'movie/:id/account_states', params, axiosConfig);
@@ -251,7 +272,7 @@ class MovieDb {
         return this.makeRequest(types_1.HttpMethod.Delete, 'movie/:id/rating', params, axiosConfig);
     }
     movieLatest(params, axiosConfig) {
-        return this.makeRequest(types_1.HttpMethod.Get, 'movie/latest', (0, lodash_1.isString)(params) ? { language: params } : params, axiosConfig);
+        return this.makeRequest(types_1.HttpMethod.Get, 'movie/latest', (0, lodash_1.isString)(params) ? { language: params } : params, axiosConfig, this.movieMediaType);
     }
     movieNowPlaying(params, axiosConfig) {
         return this.makeRequest(types_1.HttpMethod.Get, 'movie/now_playing', params, axiosConfig, this.movieMediaType);
@@ -266,7 +287,7 @@ class MovieDb {
         return this.makeRequest(types_1.HttpMethod.Get, 'movie/upcoming', params, axiosConfig, this.movieMediaType);
     }
     tvInfo(params, axiosConfig) {
-        return this.makeRequest(types_1.HttpMethod.Get, 'tv/:id', params, axiosConfig);
+        return this.makeRequest(types_1.HttpMethod.Get, 'tv/:id', params, axiosConfig, { ...this.tvMediaType, hasSubType: true });
     }
     tvAccountStates(params, axiosConfig) {
         return this.makeRequest(types_1.HttpMethod.Get, 'tv/:id/account_states', params, axiosConfig);

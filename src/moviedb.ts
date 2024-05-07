@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios'
-import { isObject, isString, merge, omit } from 'lodash'
+import { has, isObject, isString, merge, omit } from 'lodash'
 import PromiseThrottle from 'promise-throttle'
 import { HttpMethod, AuthenticationToken, RequestParams, SessionRequestParams, SessionResponse } from './types'
 import * as types from './request-types'
@@ -26,6 +26,8 @@ export class MovieDb {
     })
   }
 
+  cartonsSubType: any = { media_sub_type: 'cartoons', hasSubType: true }
+  animationSubType: any = { media_sub_type: 'animation', hasSubType: true }
   movieMediaType: any = { media_type: 'movie' }
   tvMediaType: any = { media_type: 'tv' }
 
@@ -123,7 +125,7 @@ export class MovieDb {
     endpoint: string,
     params: string | number | RequestParams = {},
     axiosConfig: AxiosRequestConfig = {},
-    extraProps: {} = {},
+    extraProps: { hasSubType?: boolean } = { hasSubType: false },
   ): Promise<any> {
     const timeout = typeof params === 'object' ? params?.timeout : 0
 
@@ -150,9 +152,23 @@ export class MovieDb {
 
     return this.queue.add(async () => {
       await this.sleep(timeout)
-      const res = (await axios.request(request)).data
+      let res = (await axios.request(request)).data
       if (res.results && res.results.length > 0) {
         res.results = res.results?.map((r: any) => ({ ...r, ...extraProps })) //media_type: 'movie' | 'tv' | 'person'
+      } else {
+        if (extraProps.hasSubType) {
+          let subType = null
+          const isAnimation = Object.values(res.genres || []).some((it: any) => it.name === 'Animation')
+
+          if (res.origin_country.includes('JP') && isAnimation) {
+            subType = this.animationSubType
+          } else if (isAnimation) {
+            subType = this.cartonsSubType
+          } else {
+            subType = { hasSubType: false }
+          }
+          res = { ...res, ...extraProps, ...subType }
+        }
       }
       return res
     })
@@ -282,7 +298,10 @@ export class MovieDb {
     params: string | number | types.IdAppendToResponseRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.MovieResponse> {
-    return this.makeRequest(HttpMethod.Get, 'movie/:id', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'movie/:id', params, axiosConfig, {
+      ...this.movieMediaType,
+      hasSubType: true,
+    })
   }
 
   movieAccountStates(
@@ -414,6 +433,7 @@ export class MovieDb {
       'movie/latest',
       isString(params) ? { language: params } : params,
       axiosConfig,
+      this.movieMediaType,
     )
   }
 
@@ -449,7 +469,7 @@ export class MovieDb {
     params: string | number | types.IdAppendToResponseRequest,
     axiosConfig?: AxiosRequestConfig,
   ): Promise<types.ShowResponse> {
-    return this.makeRequest(HttpMethod.Get, 'tv/:id', params, axiosConfig)
+    return this.makeRequest(HttpMethod.Get, 'tv/:id', params, axiosConfig, { ...this.tvMediaType, hasSubType: true })
   }
 
   tvAccountStates(

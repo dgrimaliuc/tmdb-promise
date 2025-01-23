@@ -26,6 +26,7 @@ class MovieDb {
     }
     cartonsSubType = { media_sub_type: 'cartoons', hasSubType: true };
     animationSubType = { media_sub_type: 'animation', hasSubType: true };
+    episodeMediaType = { media_type: 'episode' };
     movieMediaType = { media_type: 'movie' };
     tvMediaType = { media_type: 'tv' };
     /**
@@ -122,21 +123,22 @@ class MovieDb {
             if (res.results && res.results.length > 0) {
                 res.results = res.results?.map((r) => ({ ...r, ...extraProps })); //media_type: 'movie' | 'tv' | 'person'
             }
-            else {
-                if (extraProps.hasSubType) {
-                    let subType = null;
-                    const isAnimation = Object.values(res.genres || []).some((it) => it.name === 'Animation');
-                    if (res.origin_country.includes('JP') && isAnimation) {
-                        subType = this.animationSubType;
-                    }
-                    else if (isAnimation) {
-                        subType = this.cartonsSubType;
-                    }
-                    else {
-                        subType = { hasSubType: false };
-                    }
-                    res = { ...res, ...extraProps, ...subType };
+            else if (extraProps.hasSubType) {
+                let subType = null;
+                const isAnimation = Object.values(res.genres || []).some((it) => it.name === 'Animation');
+                if (res.origin_country.includes('JP') && isAnimation) {
+                    subType = this.animationSubType;
                 }
+                else if (isAnimation) {
+                    subType = this.cartonsSubType;
+                }
+                else {
+                    subType = { hasSubType: false };
+                }
+                res = { ...res, ...extraProps, ...subType };
+            }
+            else {
+                res = { ...res, ...extraProps };
             }
             return res;
         });
@@ -389,7 +391,7 @@ class MovieDb {
         return this.makeRequest(types_1.HttpMethod.Get, 'tv/:id/season/:season_number/videos', params, axiosConfig);
     }
     episodeInfo(params, axiosConfig) {
-        return this.makeRequest(types_1.HttpMethod.Get, 'tv/:id/season/:season_number/episode/:episode_number', params, axiosConfig);
+        return this.makeRequest(types_1.HttpMethod.Get, 'tv/:id/season/:season_number/episode/:episode_number', params, axiosConfig, this.episodeMediaType);
     }
     episodeChanges(params, axiosConfig) {
         return this.makeRequest(types_1.HttpMethod.Get, 'tv/episode/:id/changes', params, axiosConfig);

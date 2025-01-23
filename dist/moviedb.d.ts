@@ -14,6 +14,7 @@ export declare class MovieDb {
     }, baseUrl?: string, requestsPerSecondLimit?: number);
     cartonsSubType: any;
     animationSubType: any;
+    episodeMediaType: any;
     movieMediaType: any;
     tvMediaType: any;
     /**
